@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using System.Drawing;
 
 /*
 mirror {x|y} 
@@ -101,6 +102,26 @@ namespace app_1
             }
 
         }
+
+        public void execute()
+        {
+            Bitmap input = new Bitmap(this.input);
+            Bitmap output = null;
+
+            switch (this.command)
+            {
+                case Command.mirror:
+                    output = Methods.mirror(input, this.axis);
+                    break;
+                case Command.rotate:
+                    output = Methods.rotate(input, this.direction, this.angle);
+                    break;
+
+            }
+
+            output.Save(this.output);
+        }
+
 
         public override string ToString()
         {
