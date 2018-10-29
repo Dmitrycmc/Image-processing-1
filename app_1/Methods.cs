@@ -251,74 +251,114 @@ namespace app_1
             return output;
         }
 
+        static double gaussian(double x, float sigma)
+        {
+            return Math.Exp(-Math.Pow(x, 2) / (2 * sigma * sigma)) / (sigma * Math.Sqrt(2 * Math.PI));
+        }
 
-
-        /*
-
-
-                public static Bitmap sobel(Bitmap input, Extra extra, Axis axis)
+        static double[,] getGaussKernel(float sigma)
+        {
+            int rad = (int) Math.Ceiling(2 * sigma);
+            double[,] kernel = new double[rad, rad];
+            
+            for (int i = 0; i < rad; i++)
+            {
+                for (int j = 0; j <= i; j++)
                 {
-                    int width = input.Width;
-                    int height = input.Height;
-                    Bitmap output = new Bitmap(width, height);
-                    int[,] kernel;
-
-                    Func<int, int, Color> uniGetPixel = (x, y) =>
+                    if (Math.Sqrt(i * i + j * j) > 2 * sigma)
                     {
-                        x = Math.Max(0, x);
-                        x = Math.Min(width - 1, x);
-                        y = Math.Max(0, y);
-                        y = Math.Min(height - 1, y);
-                        return input.GetPixel(x, y);
-                    };
-
-                    if (axis == Axis.x)
-                    {
-                        kernel = new int[,] { { -1, 0, 1 }, { -2, 0, 2 }, { -1, 0, 1 } };
+                        kernel[i, j] = kernel[j, i] = 0;
+                        continue;
                     }
-                    else
-                    {
-                        kernel = new int[,] { { -1, -2, -1 }, { 0, 0, 0 }, { 1, 2, 1 } };
-                    }
-
-                    Func<int, int, int> convolution = (x, y) =>
-                    {
-                        int sum = 0;
-                        for (int i = 0; i < 3; i++)
-                        {
-                            for (int j = 0; j < 3; j++)
-                            {
-                                int l = uniGetPixel(x - 1 + i, y - 1 + j).R;
-                                int kernel_el = kernel[i, j];
-
-                                sum += l * kernel_el;
-
-                            }
-                        }
-                        return sum;
-                    };
-                    for (int i = 0; i < width; i++)
-                    {
-                        for (int j = 0; j < height; j++)
-                        {
-                            Color color = input.GetPixel(i, j);
-                            int[] rgb = new int[] { color.R, color.G, color.B };
-                            int l = (rgb.Max() - rgb.Min()) / 2; 
-                            input.SetPixel(i, j, Color.FromArgb(255, l, l, l));
-                        }
-                    }
-                    for (int i = 0; i < width; i++)
-                    {
-                        for (int j = 0; j < height; j++)
-                        {
-                            int conv = convolution(i, j);
-                            int l = conv / 8 + 128;
-                            Color color = Color.FromArgb(255, l, l, l);
-                            output.SetPixel(i, j, color);
-                        }
-                    }
-                    return output;
+                    double val = gaussian(Math.Sqrt(i*i + j*j), sigma);
+                    kernel[i, j] = kernel[j, i] = val;
                 }
-                 */
+            }
+
+            double total = 0;
+
+            for (int i = 1 - rad; i <= rad - 1; i++)
+            {
+                for (int j = 1 - rad; j <= rad - 1; j++)
+                {
+                    total += kernel[Math.Abs(i), Math.Abs(j)];
+                }
+            }
+
+            for (int i = 0; i < rad; i++)
+            {
+                for (int j = 0; j < rad; j++)
+                {
+                    kernel[i, j] /= total;
+                }
+            }
+
+            return kernel;
+        }
+        
+        public static Bitmap gauss(Bitmap input, Extra extra, float sigma)
+        {
+            double[,] kernel = getGaussKernel(sigma);
+            
+            Func<int, int, Color> currentGetPixel = null;
+
+            switch (extra)
+            {
+                case Extra.odd:
+                    currentGetPixel = input.oddGetPixel;
+                    break;
+                case Extra.even:
+                    currentGetPixel = input.evenGetPixel;
+                    break;
+                case Extra.rep:
+                    currentGetPixel = input.repGetPixel;
+                    break;
+            }
+            
+            Func<int, int, Color> convolution = (x, y) =>
+            {
+                int rad = kernel.GetLength(0);
+                double r = 0;
+                double g = 0;
+                double b = 0;
+
+                for (int i = 1 - rad; i <= rad - 1; i++)
+                {
+                    for (int j = 1 - rad; j <= rad - 1; j++)
+                    {
+                        Color color = currentGetPixel(x + i, y + j);
+                        double kernel_el = kernel[Math.Abs(i), Math.Abs(j)];
+                        r += color.R * kernel_el;
+                        g += color.G * kernel_el;
+                        b += color.B * kernel_el;
+                    }
+                }
+                return Color.FromArgb(255, (int)Math.Round(r), (int)Math.Round(g), (int)Math.Round(b));
+            };
+
+            int width = input.Width;
+            int height = input.Height;
+            Bitmap output = new Bitmap(width, height);
+            
+            for (int i = 0; i < width; i++)
+            {
+                for (int j = 0; j < height; j++)
+                {
+                    Color color = convolution(i, j);
+                    output.SetPixel(i, j, color);
+                }
+            }
+            return output;
+        }
+
+        public static Bitmap gradient(Bitmap input, Extra extra, float sigma)
+        {
+            int width = input.Width;
+            int height = input.Height;
+            Bitmap output = new Bitmap(width, height);
+
+            return output;
+        }
+
     }
 }
