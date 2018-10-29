@@ -12,7 +12,7 @@ namespace app_1
         {
             try
             {
-                Arguments Args = new Arguments(new string[] { "rotate", "cw", "180", "3.bmp", "4.bmp" });
+                Arguments Args = new Arguments(new string[] { "median", "7", "3.bmp", "10.bmp" });
                 Console.WriteLine(Args);
                 Args.execute();
                 Console.WriteLine("Success!");

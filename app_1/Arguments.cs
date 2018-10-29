@@ -44,6 +44,7 @@ namespace app_1
         public Axis axis;
         public Direction direction;
         public Angle angle;
+        public int rad;
 
         public Arguments(string[] args)
         {
@@ -95,7 +96,14 @@ namespace app_1
                     }
                     break;
                 case "sobel": command = Command.sobel; break;
-                case "median": command = Command.median; break;
+                case "median":
+                    command = Command.median;
+                    if (props.Length != 1)
+                    {
+                        throw new Exception("Invalid number of props!");
+                    }
+                    rad = int.Parse(props[0]);
+                    break;
                 case "gauss": command = Command.gauss; break;
                 case "gradient": command = Command.gradient; break;
                 default: throw new Exception("Invalid command \"" + args[0] + "\""); 
@@ -115,6 +123,11 @@ namespace app_1
                     break;
                 case Command.rotate:
                     output = Methods.rotate(input, this.direction, this.angle);
+                    break;
+
+
+                case Command.median:
+                    output = Methods.median(input, this.rad);
                     break;
 
             }
