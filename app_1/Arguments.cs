@@ -33,6 +33,7 @@ namespace app_1
     public enum Axis { x, y };
     public enum Direction { cw, ccw };
     public enum Angle { oneQuarter, twoQuarter, threeQuarter };
+    public enum Extra { rep, odd, even };
 
     class Arguments
     {
@@ -45,6 +46,7 @@ namespace app_1
         public Direction direction;
         public Angle angle;
         public int rad;
+        public Extra extra;
 
         public Arguments(string[] args)
         {
@@ -95,7 +97,26 @@ namespace app_1
                         default: throw new Exception("Invalid prop \"" + props[0] + "\"");
                     }
                     break;
-                case "sobel": command = Command.sobel; break;
+                case "sobel":
+                    command = Command.sobel;
+                    if (props.Length != 2)
+                    {
+                        throw new Exception("Invalid number of props!");
+                    }
+                    switch (props[0])
+                    {
+                        case "rep": extra = Extra.rep; break;
+                        case "odd": extra = Extra.odd; break;
+                        case "even": extra = Extra.even; break;
+                        default: throw new Exception("Invalid prop \"" + props[0] + "\"");
+                    }
+                    switch (props[1])
+                    {
+                        case "x": axis = Axis.x; break;
+                        case "y": axis = Axis.y; break;
+                        default: throw new Exception("Invalid prop \"" + props[0] + "\"");
+                    }
+                    break;
                 case "median":
                     command = Command.median;
                     if (props.Length != 1)
@@ -126,6 +147,9 @@ namespace app_1
                     break;
 
 
+                case Command.sobel:
+                    output = Methods.sobel(input, this.extra, this.axis);
+                    break;
                 case Command.median:
                     output = Methods.median(input, this.rad);
                     break;
