@@ -295,26 +295,28 @@ namespace app_1
 
             return kernel;
         }
-        
+
+        static Func<int, int, Color> getSafeGetPixel(this Bitmap input, Extra extra)
+        {
+            switch (extra)
+            {
+                case Extra.odd:
+                    return  input.oddGetPixel;
+                case Extra.even:
+                    return  input.evenGetPixel;
+                case Extra.rep:
+                    return input.repGetPixel;
+                default:
+                    return null;
+            }
+        }
+
         public static Bitmap gauss(Bitmap input, Extra extra, float sigma)
         {
             double[,] kernel = getGaussKernel(sigma);
             
-            Func<int, int, Color> currentGetPixel = null;
+            Func<int, int, Color> currentGetPixel = input.getSafeGetPixel(extra);
 
-            switch (extra)
-            {
-                case Extra.odd:
-                    currentGetPixel = input.oddGetPixel;
-                    break;
-                case Extra.even:
-                    currentGetPixel = input.evenGetPixel;
-                    break;
-                case Extra.rep:
-                    currentGetPixel = input.repGetPixel;
-                    break;
-            }
-            
             Func<int, int, Color> convolution = (x, y) =>
             {
                 int rad = kernel.GetLength(0);
@@ -348,14 +350,132 @@ namespace app_1
                     output.SetPixel(i, j, color);
                 }
             }
+
             return output;
+        }
+
+        static double[,] derivFilter(double[,] kernel, Axis axis)
+        {
+            int rad = kernel.GetLength(0);
+            double[,] res = new double[rad, rad];
+
+            if (axis == Axis.x)
+            {
+                for (int i = 0; i < rad; i++)
+                {
+                    for (int j = 0; j < rad; j++)
+                    {
+                        double prev;
+                        double next;
+                        int m = 2;
+
+                        prev = kernel[Math.Abs(i), Math.Abs(j - 1)];
+                        if (j + 1 == rad || (next = kernel[Math.Abs(i), Math.Abs(j + 1)]) == 0)
+                        {
+                            next = kernel[Math.Abs(i), Math.Abs(j)];
+                            m = 1;
+                        }
+                        res[i, j] = (next - prev) / m;
+                    }
+                }
+                
+            } else
+            {
+                for (int i = 0; i < rad; i++)
+                {
+                    for (int j = 0; j < rad; j++)
+                    {
+                        double prev;
+                        double next;
+                        int m = 2;
+                        
+                        prev = kernel[Math.Abs(i - 1), Math.Abs(j)];
+                        if (i + 1 == rad || (next = kernel[Math.Abs(i + 1), Math.Abs(j)]) == 0)
+                        {
+                            next = kernel[Math.Abs(i), Math.Abs(j)];
+                            m = 1;
+                        }
+
+                        res[i, j] = (next - prev) / m;
+                    }
+                }
+                
+            }
+
+            return res;
         }
 
         public static Bitmap gradient(Bitmap input, Extra extra, float sigma)
         {
+            double[,] kernel = getGaussKernel(sigma);
+            double[,] kernelX = derivFilter(kernel, Axis.x);
+            double[,] kernelY = derivFilter(kernel, Axis.y);
+            
+            Func<int, int, Color> currentGetPixel = input.getSafeGetPixel(extra);
+
             int width = input.Width;
             int height = input.Height;
             Bitmap output = new Bitmap(width, height);
+            double[,][] raw = new double[width, height][];
+
+            Func<int, int, double[]> convolution = (x, y) =>
+            {
+                int rad = kernel.GetLength(0);
+                double rx = 0;
+                double gx = 0;
+                double bx = 0;
+                double ry = 0;
+                double gy = 0;
+                double by = 0;
+
+                for (int i = 1 - rad; i <= rad - 1; i++)
+                {
+                    for (int j = 1 - rad; j <= rad - 1; j++)
+                    {
+                        Color color = currentGetPixel(x + i, y + j);
+
+                        double kernel_X = kernelX[Math.Abs(i), Math.Abs(j)] * Math.Sign(j);
+                        double kernel_Y = kernelY[Math.Abs(i), Math.Abs(j)] * Math.Sign(i);
+
+                        rx += color.R * kernel_X;
+                        gx += color.G * kernel_X;
+                        bx += color.B * kernel_X;
+
+                        ry += color.R * kernel_Y;
+                        gy += color.G * kernel_Y;
+                        by += color.B * kernel_Y;
+                    }
+                }
+                return new double[] { Math.Sqrt(rx * rx + ry * ry), Math.Sqrt(gx * gx + gy * gy), Math.Sqrt(bx * bx + by * by) };
+            };
+
+            double rmax = 0;
+            double gmax = 0;
+            double bmax = 0;
+
+            for (int i = 0; i < width; i++)
+            {
+                for (int j = 0; j < height; j++)
+                {
+                    double[] val = convolution(i, j);
+                    raw[i, j] = val;
+                    if (val[0] > rmax) rmax = val[0];
+                    if (val[1] > gmax) gmax = val[1];
+                    if (val[2] > bmax) bmax = val[2];
+                }
+            }
+
+            Console.WriteLine(rmax + " " + gmax + " " + bmax);
+
+            for (int i = 0; i < width; i++)
+            {
+                for (int j = 0; j < height; j++)
+                {
+                    double[] val = raw[i, j];
+                    output.SetPixel(i, j, Color.FromArgb(255, (int)Math.Round(val[0] / rmax * 255), (int)Math.Round(val[1] / gmax * 255), (int)Math.Round(val[2] / bmax * 255)));
+                }
+            }
+
 
             return output;
         }

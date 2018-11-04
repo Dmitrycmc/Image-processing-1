@@ -12,7 +12,7 @@ namespace app_1
         {
             try
             {
-                Arguments Args = new Arguments(new string[] { "gauss", "rep", "2", "barbara.bmp", "rep.bmp" });
+                Arguments Args = new Arguments(new string[] { "gradient", "even", "5", "barbara.bmp", "5555.bmp" });
                 Console.WriteLine(Args);
                 Args.execute();
                 Console.WriteLine("Success!");
