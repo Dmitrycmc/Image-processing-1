@@ -8,7 +8,8 @@ namespace app_1
         {
             try
             {
-                Arguments Args = new Arguments(new string[] { "gradient", "even", "2", "avion.bmp", "5555.bmp" });
+               // Arguments Args = new Arguments(new string[] { "gradient", "even", "1", "avion.bmp", "avion1.jpg" });
+                Arguments Args = new Arguments(args);
                 Console.WriteLine(Args);
                 Args.execute();
                 Console.WriteLine("Success!");

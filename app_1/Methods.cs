@@ -197,7 +197,7 @@ namespace app_1
 
                     int r = Utils.scale(val[0], rmax);
                     int g = Utils.scale(val[1], gmax);
-                    int b = Utils.scale(val[2], gmax);
+                    int b = Utils.scale(val[2], bmax);
 
                     output.SetPixel(i, j, Color.FromArgb(255, r, g, b));
                 }
