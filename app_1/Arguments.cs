@@ -5,28 +5,6 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Drawing;
 
-/*
-mirror {x|y} 
-Отражение по горизонтали или по вертикали, в зависомсти от указанного параметра
-
-rotate {cw|ccw} (angle) 
-Поворот по или против часовой стрелки на заданное количество градусов, например: rotate cw 90
-
-sobel {rep|odd|even} {x|y} 
-Фильтр Собеля, обнаруживающий горизонтальные или вертикальные контуры. 
-Первый параметр отвечает за способ экстраполяции изображений
-
-median (rad) 
-Медианная фильтрация, параметр rad — целочисленный радиус фильтра, 
-то есть размер фильтра — квадрат со стороной (2 * rad + 1)
-
-gauss {rep|odd|even} (sigma) 
-Фильтр Гаусса, параметр sigma — вещественный параметр фильтра
-
-gradient {rep|odd|even} (sigma) 
-Модуль градиента
-*/
-
 namespace app_1
 {
     public enum Command { mirror, rotate, sobel, median, gauss, gradient };
