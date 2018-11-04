@@ -1,8 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using System.Drawing;
 
 namespace app_1
@@ -204,6 +201,79 @@ namespace app_1
         public static int scale(double val, double from, int to = 255)
         {
             return (int)Math.Round(val / from * to);
+        }
+
+        public static Color sobelConvolution(int x, int y, int[,] kernel, Func<int, int, Color> currentGetPixel)
+        {
+            int r = 128;
+            int g = 128;
+            int b = 128;
+            for (int i = -1; i <= 1; i++)
+            {
+                for (int j = -1; j <= 1; j++)
+                {
+                    Color color = currentGetPixel(x + i, y + j);
+                    int kernel_el = kernel[i + 1, j + 1];
+
+                    r += color.R * kernel_el;
+                    g += color.G * kernel_el;
+                    b += color.B * kernel_el;
+                }
+            }
+            return Color.FromArgb(255, Utils.restrict(r), Utils.restrict(g), Utils.restrict(b));
+        }
+
+        static public Color gaussConvolution(int x, int y, double[,] kernel, Func<int, int, Color> currentGetPixel)
+        {
+            int rad = kernel.GetLength(0);
+            double r = 0;
+            double g = 0;
+            double b = 0;
+
+            for (int i = 1 - rad; i <= rad - 1; i++)
+            {
+                for (int j = 1 - rad; j <= rad - 1; j++)
+                {
+                    Color color = currentGetPixel(x + i, y + j);
+                    double kernel_el = kernel[Math.Abs(i), Math.Abs(j)];
+                    r += color.R * kernel_el;
+                    g += color.G * kernel_el;
+                    b += color.B * kernel_el;
+                }
+            }
+            return Color.FromArgb(255, (int)Math.Round(r), (int)Math.Round(g), (int)Math.Round(b));
+        }
+
+        public static double[] gradientConvolution(int x, int y, 
+            double[,] kernel, Func<int, int, Color> currentGetPixel, double[,] kernelX, double[,] kernelY)
+        {
+            int rad = kernel.GetLength(0);
+            double rx = 0;
+            double gx = 0;
+            double bx = 0;
+            double ry = 0;
+            double gy = 0;
+            double by = 0;
+
+            for (int i = 1 - rad; i <= rad - 1; i++)
+            {
+                for (int j = 1 - rad; j <= rad - 1; j++)
+                {
+                    Color color = currentGetPixel(x + i, y + j);
+
+                    double kernel_X = kernelX[Math.Abs(i), Math.Abs(j)] * Math.Sign(j);
+                    double kernel_Y = kernelY[Math.Abs(i), Math.Abs(j)] * Math.Sign(i);
+
+                    rx += color.R * kernel_X;
+                    gx += color.G * kernel_X;
+                    bx += color.B * kernel_X;
+
+                    ry += color.R * kernel_Y;
+                    gy += color.G * kernel_Y;
+                    by += color.B * kernel_Y;
+                }
+            }
+            return new double[] { Math.Sqrt(rx * rx + ry * ry), Math.Sqrt(gx * gx + gy * gy), Math.Sqrt(bx * bx + by * by) };
         }
     }
 }
