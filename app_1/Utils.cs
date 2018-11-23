@@ -146,55 +146,28 @@ namespace app_1
             return kernel;
         }
 
-        public static double[,] derivFilter(double[,] kernel, Axis axis)
+        public static double[,] derivFilter(double[,] kernel)
         {
             int rad = kernel.GetLength(0);
             double[,] res = new double[rad, rad];
+			
+			for (int i = 0; i < rad; i++)
+			{
+				for (int j = 0; j < rad; j++)
+				{
+					double prev;
+					double next;
+					int m = 2;
 
-            if (axis == Axis.x)
-            {
-                for (int i = 0; i < rad; i++)
-                {
-                    for (int j = 0; j < rad; j++)
-                    {
-                        double prev;
-                        double next;
-                        int m = 2;
-
-                        prev = kernel[Math.Abs(i), Math.Abs(j - 1)];
-                        if (j + 1 == rad || (next = kernel[Math.Abs(i), Math.Abs(j + 1)]) == 0)
-                        {
-                            next = kernel[Math.Abs(i), Math.Abs(j)];
-                            m = 1;
-                        }
-                        res[i, j] = (next - prev) / m;
-                    }
-                }
-
-            }
-            else
-            {
-                for (int i = 0; i < rad; i++)
-                {
-                    for (int j = 0; j < rad; j++)
-                    {
-                        double prev;
-                        double next;
-                        int m = 2;
-
-                        prev = kernel[Math.Abs(i - 1), Math.Abs(j)];
-                        if (i + 1 == rad || (next = kernel[Math.Abs(i + 1), Math.Abs(j)]) == 0)
-                        {
-                            next = kernel[Math.Abs(i), Math.Abs(j)];
-                            m = 1;
-                        }
-
-                        res[i, j] = (next - prev) / m;
-                    }
-                }
-
-            }
-
+					prev = kernel[Math.Abs(i), Math.Abs(j - 1)];
+					if (j + 1 == rad || (next = kernel[Math.Abs(i), Math.Abs(j + 1)]) == 0)
+					{
+						next = kernel[Math.Abs(i), Math.Abs(j)];
+						m = 1;
+					}
+					res[i, j] = (next - prev) / m;
+				}
+			}
             return res;
         }
         
@@ -244,36 +217,157 @@ namespace app_1
             return Color.FromArgb(255, (int)Math.Round(r), (int)Math.Round(g), (int)Math.Round(b));
         }
 
-        public static double[] gradientConvolution(int x, int y, 
-            double[,] kernel, Func<int, int, Color> currentGetPixel, double[,] kernelX, double[,] kernelY)
-        {
-            int rad = kernel.GetLength(0);
-            double rx = 0;
-            double gx = 0;
-            double bx = 0;
-            double ry = 0;
-            double gy = 0;
-            double by = 0;
+		public static double[] gradientConvolution(int x, int y,
+			double[,] kernel, Func<int, int, Color> currentGetPixel, double[,] kernelX)
+		{
+			int rad = kernel.GetLength(0);
+			double rx = 0;
+			double gx = 0;
+			double bx = 0;
+			double ry = 0;
+			double gy = 0;
+			double by = 0;
 
-            for (int i = 1 - rad; i <= rad - 1; i++)
-            {
-                for (int j = 1 - rad; j <= rad - 1; j++)
-                {
-                    Color color = currentGetPixel(x + i, y + j);
+			for (int i = 1 - rad; i <= rad - 1; i++)
+			{
+				for (int j = 1 - rad; j <= rad - 1; j++)
+				{
+					Color color = currentGetPixel(x + i, y + j);
 
-                    double kernel_X = kernelX[Math.Abs(i), Math.Abs(j)] * Math.Sign(j);
-                    double kernel_Y = kernelY[Math.Abs(i), Math.Abs(j)] * Math.Sign(i);
+					double elX = kernelX[Math.Abs(i), Math.Abs(j)] * Math.Sign(j);
+					double elY = kernelX[Math.Abs(j), Math.Abs(i)] * Math.Sign(i);
 
-                    rx += color.R * kernel_X;
-                    gx += color.G * kernel_X;
-                    bx += color.B * kernel_X;
+					rx += color.R * elX;
+					gx += color.G * elX;
+					bx += color.B * elX;
 
-                    ry += color.R * kernel_Y;
-                    gy += color.G * kernel_Y;
-                    by += color.B * kernel_Y;
-                }
-            }
-            return new double[] { Math.Sqrt(rx * rx + ry * ry), Math.Sqrt(gx * gx + gy * gy), Math.Sqrt(bx * bx + by * by) };
-        }
-    }
+					ry += color.R * elY;
+					gy += color.G * elY;
+					by += color.B * elY;
+				}
+			}
+
+			return new double[] {
+				Math.Sqrt(rx * rx + ry * ry),
+				Math.Sqrt(gx * gx + gy * gy),
+				Math.Sqrt(bx * bx + by * by)
+			};
+		}
+
+		public static int angle(double x, double y)
+		{
+			if (x == 0 && y == 0) return 0;
+			double angle = Math.Atan2(y, x);
+			angle /= Math.PI / 4;
+			angle = Math.Round(angle);
+			angle %= 4;
+			if (angle < 0) angle += 4;
+			switch (angle)
+			{
+				case 0:
+					return 64;
+				case 1:
+					return 255;
+				case 2:
+					return 128;
+				case 3:
+					return 192;
+				default:
+					return -1;
+			}
+		}
+
+		public static double getGrayShade(Color color)
+		{
+			return (color.R + color.G + color.B) / 3;
+		}
+
+		public static int gradientDir(int x, int y,
+			double[,] kernel, Func<int, int, Color> currentGetPixel, double[,] kernelX)
+		{
+			int rad = kernel.GetLength(0);
+			double gradX = 0;
+			double gradY = 0;
+
+			for (int i = 1 - rad; i <= rad - 1; i++)
+			{
+				for (int j = 1 - rad; j <= rad - 1; j++)
+				{
+					Color color = currentGetPixel(x + i, y + j);
+
+					double elX = kernelX[Math.Abs(i), Math.Abs(j)] * Math.Sign(j);
+					double elY = kernelX[Math.Abs(j), Math.Abs(i)] * Math.Sign(i);
+
+					double intensive = (color.R + color.G + color.B) / 3;
+
+					gradX += intensive * elX;
+					gradY += intensive * elY;
+				}
+			}
+
+			return angle(gradX, gradY);
+		}
+
+		public static double avg(Bitmap img, int n = -1, int m = -1)
+		{
+			int width = img.Width;
+			int height = img.Height;
+
+			double sum = 0;
+
+			bool mMode = n != -1 && m != -1;
+
+			int iStart = mMode ? 8 * n : 0;
+			int iEnd = mMode ? 8 * n + 7: width;
+			int jStart = mMode ? 8 * m : 0;
+			int jEnd = mMode ? 8 * m + 7 : height;
+
+			for (int i = iStart; i < iEnd; i++)
+			{
+				for (int j = jStart; j < jEnd; j++)
+				{
+					Color color = img.GetPixel(i, j);
+					sum += (color.R + color.G + color.B) / 3;
+				}
+			}
+
+			return sum / (width * height);
+		}
+
+		public static double cov(Bitmap img1, Bitmap img2, double avg1, double avg2, int n = -1, int m = -1)
+		{
+			int width = img1.Width;
+			int height = img1.Height;
+			
+			double sum = 0;
+
+			bool mMode = n != -1 && m != -1;
+			
+			int iStart = mMode ? 8 * n : 0;
+			int iEnd = mMode ? 8 * n + 7 : width;
+			int jStart = mMode ? 8 * m : 0;
+			int jEnd = mMode ? 8 * m + 7 : height;
+
+			for (int i = iStart; i < iEnd; i++)
+			{
+				for (int j = jStart; j < jEnd; j++)
+				{
+					Color color1 = img1.GetPixel(i, j);
+					Color color2 = img2.GetPixel(i, j);
+					
+					double intensive1 = (color1.R + color1.G + color1.B) / 3;
+					double intensive2 = (color2.R + color2.G + color2.B) / 3;
+
+					sum += (intensive1 - avg1) * (intensive2 - avg2);
+				}
+			}
+
+			return sum / (width * height);
+		}
+
+		public static double var(Bitmap img, double avg, int n = -1, int m = -1)
+		{
+			return cov(img, img, avg, avg, n, m);
+		}
+	}
 }
