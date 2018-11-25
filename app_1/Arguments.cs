@@ -76,6 +76,7 @@ namespace app_1
         public Extra extra;
         public float sigma;
 		public int thr_high, thr_low;
+		public bool progress;
 
 		static Axis parseAxis(string str)
         {
@@ -121,7 +122,8 @@ namespace app_1
 
         public Arguments(string[] args)
         {
-            int len = args.Length;
+			progress = args[args.Length - 1] == "progress";
+            int len = args.Length - 1;
 
             if (len < 3)
             {
@@ -274,16 +276,16 @@ namespace app_1
 					res = Methods.rotate(img1, this.direction, this.angle);
                     break;
                 case Command.sobel:
-					res = Methods.sobel(img1, this.extra, this.axis);
+					res = Methods.sobel(img1, this.extra, this.axis, progress: progress);
                     break;
                 case Command.median:
-					res = Methods.median(img1, this.rad);
+					res = Methods.median(img1, this.rad, progress: progress);
                     break;
                 case Command.gauss:
-					res = Methods.gauss(img1, this.extra, this.sigma);
+					res = Methods.gauss(img1, this.extra, this.sigma, progress: progress);
                     break;
 				case Command.gradient:
-					res = Methods.gradient(img1, this.extra, this.sigma);
+					res = Methods.gradient(img1, this.extra, this.sigma, progress: progress);
 					break;
 				case Command.mse:
 					Console.WriteLine(Methods.mse(img1, img2));
@@ -298,13 +300,13 @@ namespace app_1
 					Console.WriteLine(Methods.mssim(img1, img2));
 					return;
 				case Command.dir:
-					res = Methods.dir(img1, this.sigma);
+					res = Methods.dir(img1, this.sigma, progress: progress);
 					break;
 				case Command.nonmax:
-					res = Methods.nonmax(img1, this.sigma);
+					res = Methods.nonmax(img1, this.sigma, progress: progress);
 					break;
 				case Command.canny:
-					res = Methods.canny(img1, this.sigma, this.thr_high, this.thr_low);
+					res = Methods.canny(img1, this.sigma, this.thr_high, this.thr_low, progress: progress);
 					break;
 			}
 			res.Save(this.img2);

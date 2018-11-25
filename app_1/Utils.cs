@@ -5,8 +5,9 @@ using System.Drawing;
 namespace app_1
 {
     public static class Utils
-    {        
-        public static List<int>[] getPixelsFromArea(this Bitmap input, int x, int y, int rad)
+    {
+		public static double eps = 0.001;
+		public static List<int>[] getPixelsFromArea(this Bitmap input, int x, int y, int rad)
         {
             List<int> r = new List<int>();
             List<int> g = new List<int>();
@@ -142,8 +143,7 @@ namespace app_1
                     kernel[i, j] /= total;
                 }
             }
-
-            return kernel;
+			return kernel;
         }
 
         public static double[,] derivFilter(double[,] kernel)
@@ -218,9 +218,9 @@ namespace app_1
         }
 
 		public static double[] gradientConvolution(int x, int y,
-			double[,] kernel, Func<int, int, Color> currentGetPixel, double[,] kernelX)
+			Func<int, int, Color> currentGetPixel, double[,] kernelX)
 		{
-			int rad = kernel.GetLength(0);
+			int rad = kernelX.GetLength(0);
 			double rx = 0;
 			double gx = 0;
 			double bx = 0;
@@ -236,7 +236,7 @@ namespace app_1
 
 					double elX = kernelX[Math.Abs(i), Math.Abs(j)] * Math.Sign(j);
 					double elY = kernelX[Math.Abs(j), Math.Abs(i)] * Math.Sign(i);
-
+					
 					rx += color.R * elX;
 					gx += color.G * elX;
 					bx += color.B * elX;
@@ -256,7 +256,7 @@ namespace app_1
 
 		public static int angle(double x, double y)
 		{
-			if (x == 0 && y == 0) return 0;
+			if (Math.Abs(x) < Utils.eps && Math.Abs(y) < Utils.eps) return 0;
 			double angle = Math.Atan2(y, x);
 			angle /= Math.PI / 4;
 			angle = Math.Round(angle);
@@ -265,13 +265,13 @@ namespace app_1
 			switch (angle)
 			{
 				case 0:
-					return 64;
-				case 1:
-					return 255;
-				case 2:
 					return 128;
-				case 3:
+				case 1:
 					return 192;
+				case 2:
+					return 64;
+				case 3:
+					return 255;
 				default:
 					return -1;
 			}
@@ -304,7 +304,7 @@ namespace app_1
 					gradY += intensive * elY;
 				}
 			}
-
+			//Console.WriteLine(gradX + " " + gradY);
 			return angle(gradX, gradY);
 		}
 

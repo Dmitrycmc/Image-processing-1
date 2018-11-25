@@ -83,13 +83,15 @@ namespace app_1
             return output;
         }
         
-        public static Bitmap median(Bitmap input, int rad)
+        public static Bitmap median(Bitmap input, int rad, bool progress = false)
         {
             int width = input.Width;
             int height = input.Height;
             Bitmap output = new Bitmap(width, height);
-            
-            for (int i = 0; i < width; i++)
+			int size = width * height;
+			Progress prog = new Progress("Median", size);
+
+			for (int i = 0; i < width; i++)
             {
                 for (int j = 0; j < height; j++)
                 {
@@ -103,18 +105,23 @@ namespace app_1
                     int center = r.Length / 2;
                     Color color = Color.FromArgb(255, r[center], g[center], b[center]);
                     output.SetPixel(i, j, color);
+
+					if (progress) prog.inc();
                 }
-            }
-            return output;
+			}
+			if (progress) prog.finish();
+			return output;
         }
 
-        public static Bitmap sobel(Bitmap input, Extra extra, Axis axis)
+        public static Bitmap sobel(Bitmap input, Extra extra, Axis axis, bool progress = false)
         {
             int width = input.Width;
             int height = input.Height;
             Bitmap output = new Bitmap(width, height);
-           
-            Func<int, int, Color> currentGetPixel = input.getSafeGetPixel(extra);
+			int size = width * height;
+			Progress prog = new Progress("Sobel", size);
+
+			Func<int, int, Color> currentGetPixel = input.getSafeGetPixel(extra);
 
             int[,] kernel;
             if (axis == Axis.x)
@@ -132,13 +139,16 @@ namespace app_1
                 {
                     Color color = Utils.sobelConvolution(i, j, kernel, currentGetPixel);
                     output.SetPixel(i, j, color);
+
+					if (progress) prog.inc();
                 }
-            }
-            return output;
+			}
+			if (progress) prog.finish();
+			return output;
         }
         
 
-        public static Bitmap gauss(Bitmap input, Extra extra, float sigma)
+        public static Bitmap gauss(Bitmap input, Extra extra, float sigma, bool progress = false)
         {
             double[,] kernel = Utils.getGaussKernel(sigma);
             
@@ -146,61 +156,75 @@ namespace app_1
             
             int width = input.Width;
             int height = input.Height;
+			int size = height * width;
+
+			Progress prog = progress ? new Progress("Gauss", size) : null;
+
             Bitmap output = new Bitmap(width, height);
             
             for (int i = 0; i < width; i++)
             {
-                for (int j = 0; j < height; j++)
-                {
-                    Color color = Utils.gaussConvolution(i, j, kernel, currentGetPixel);
-                    output.SetPixel(i, j, color);
-                }
+				for (int j = 0; j < height; j++)
+				{
+					Color color = Utils.gaussConvolution(i, j, kernel, currentGetPixel);
+					output.SetPixel(i, j, color);
+
+					if (progress) prog.inc();
+				}
             }
 
-            return output;
+			if (progress) prog.finish();
+			return output;
         }
         
-        public static Bitmap gradient(Bitmap input, Extra extra, float sigma)
+        public static Bitmap gradient(Bitmap input, Extra extra, float sigma, bool progress = false)
         {
             double[,] kernel = Utils.getGaussKernel(sigma);
             double[,] kernelX = Utils.derivFilter(kernel);
-            
-            Func<int, int, Color> currentGetPixel = input.getSafeGetPixel(extra);
+		
+			Func<int, int, Color> currentGetPixel = input.getSafeGetPixel(extra);
 
             int width = input.Width;
             int height = input.Height;
             Bitmap output = new Bitmap(width, height);
             double[,][] raw = new double[width, height][];
-            
-            double max = 0;
+			int size = width * height;
+			Progress prog = new Progress("Gradient", size);
+			
+			double max = 0;
 
             for (int i = 0; i < width; i++)
             {
                 for (int j = 0; j < height; j++)
                 {
-                    double[] val = Utils.gradientConvolution(i, j, kernel, currentGetPixel, kernelX);
-                    raw[i, j] = val;
+                    double[] val = Utils.gradientConvolution(i, j,  currentGetPixel, kernelX);
+					raw[i, j] = val;
                     if (val[0] > max) max = val[0];
                     if (val[1] > max) max = val[1];
                     if (val[2] > max) max = val[2];
+
+					if (progress) prog.inc();
                 }
             }
 
-            for (int i = 0; i < width; i++)
-            {
-                for (int j = 0; j < height; j++)
-                {
-                    double[] val = raw[i, j];
+			if (max < Utils.eps) max = 255;
 
-                    int r = Utils.scale(val[0], max);
-                    int g = Utils.scale(val[1], max);
-                    int b = Utils.scale(val[2], max);
+			for (int i = 0; i < width; i++)
+			{
+				for (int j = 0; j < height; j++)
+				{
+					double[] val = raw[i, j];
 
-                    output.SetPixel(i, j, Color.FromArgb(255, r, g, b));
-                }
-            }
-            
-            return output;
+					int r = Utils.scale(val[0], max);
+					int g = Utils.scale(val[1], max);
+					int b = Utils.scale(val[2], max);
+
+					output.SetPixel(i, j, Color.FromArgb(255, r, g, b));
+				}
+				
+			}
+			if (progress) prog.finish();
+			return output;
         }
 
 		public static double mse(Bitmap img1, Bitmap img2)
@@ -302,10 +326,12 @@ namespace app_1
 			return sum / (W * H);
 		}
 
-		public static Bitmap dir(Bitmap img, float sigma, Extra extra = Extra.rep)
+		public static Bitmap dir(Bitmap img, float sigma, Extra extra = Extra.rep, bool progress = false)
 		{
 			int width = img.Width;
 			int height = img.Height;
+			int size = width * height;
+			Progress prog = new Progress("Dir", size);
 
 			double[,] kernel = Utils.getGaussKernel(sigma);
 			double[,] kernelX = Utils.derivFilter(kernel);
@@ -321,19 +347,24 @@ namespace app_1
 					int val = Utils.gradientDir(i, j, kernel, currentGetPixel, kernelX);
 					Color color = Color.FromArgb(255, val, val, val);
 					output.SetPixel(i, j, color);
+
+					if (progress) prog.inc();
 				}
 			}
 
+			if (progress) prog.finish();
 			return output;
 		}
 
-		public static Bitmap nonmax(Bitmap img, float sigma, Extra extra = Extra.rep)
+		public static Bitmap nonmax(Bitmap img, float sigma, Extra extra = Extra.rep, bool progress = false)
 		{
-			Bitmap dirGrad = dir(img, sigma, extra);
-			Bitmap modGrad = gradient(img, extra, sigma);
+			Bitmap dirGrad = dir(img, sigma, extra, progress: progress);
+			Bitmap modGrad = gradient(img, extra, sigma, progress: progress);
 			int width = dirGrad.Width;
 			int height = dirGrad.Height;
-			
+			int size = width * height;
+			Progress prog = new Progress("Nonmax", size);
+
 			Bitmap output = new Bitmap(width, height);
 			int[,] raw = new int[width, height];
 
@@ -349,10 +380,10 @@ namespace app_1
 					double dir = dirColor.R;
 					int mod = (modColor.R + modColor.G + modColor.B) / 3;
 
-					if (dir == 64 && (i == 0 || dirGrad.GetPixel(i - 1, j).R == 64 && mod >= Utils.getGrayShade(modGrad.GetPixel(i - 1, j))) && (i == width - 1 || dirGrad.GetPixel(i + 1, j).R == 64 && mod >= Utils.getGrayShade(modGrad.GetPixel(i + 1, j))) ||
-						dir == 128 && (j == 0 || dirGrad.GetPixel(i, j - 1).R == 128 && mod >= Utils.getGrayShade(modGrad.GetPixel(i, j - 1))) && (j == height - 1 || dirGrad.GetPixel(i, j + 1).R == 128 && mod >= Utils.getGrayShade(modGrad.GetPixel(i, j + 1))) ||
-						dir == 192 && (j == 0 || i == 0 || dirGrad.GetPixel(i - 1, j - 1).R == 192 && mod >= Utils.getGrayShade(modGrad.GetPixel(i - 1, j - 1))) && (i == width - 1 || j == height - 1 || dirGrad.GetPixel(i + 1, j + 1).R == 192 && mod >= Utils.getGrayShade(modGrad.GetPixel(i + 1, j + 1))) ||
-						dir == 255 && (j == height - 1 || i == 0 || dirGrad.GetPixel(i - 1, j + 1).R == 255 && mod >= Utils.getGrayShade(modGrad.GetPixel(i - 1, j + 1))) && (i == width - 1 || j == 0 || dirGrad.GetPixel(i + 1, j - 1).R == 255 && mod >= Utils.getGrayShade(modGrad.GetPixel(i + 1, j - 1)))
+					if (dir == 64 && (i == 0 || dirGrad.GetPixel(i - 1, j).R == 0 || dirGrad.GetPixel(i - 1, j).R == 64 && mod >= Utils.getGrayShade(modGrad.GetPixel(i - 1, j))) && (i == width - 1 || dirGrad.GetPixel(i + 1, j).R == 0 || dirGrad.GetPixel(i + 1, j).R == 64 && mod >= Utils.getGrayShade(modGrad.GetPixel(i + 1, j))) ||
+						dir == 128 && (j == 0 || dirGrad.GetPixel(i, j - 1).R == 0 || dirGrad.GetPixel(i, j - 1).R == 128 && mod >= Utils.getGrayShade(modGrad.GetPixel(i, j - 1))) && (j == height - 1 || dirGrad.GetPixel(i, j + 1).R == 0 || dirGrad.GetPixel(i, j + 1).R == 128 && mod >= Utils.getGrayShade(modGrad.GetPixel(i, j + 1))) ||
+						dir == 192 && (j == 0 || i == 0 || dirGrad.GetPixel(i - 1, j - 1).R == 0 || dirGrad.GetPixel(i - 1, j - 1).R == 192 && mod >= Utils.getGrayShade(modGrad.GetPixel(i - 1, j - 1))) && (i == width - 1 || j == height - 1 || dirGrad.GetPixel(i + 1, j + 1).R == 0 || dirGrad.GetPixel(i + 1, j + 1).R == 192 && mod >= Utils.getGrayShade(modGrad.GetPixel(i + 1, j + 1))) ||
+						dir == 255 && (j == height - 1 || i == 0 || dirGrad.GetPixel(i - 1, j + 1).R == 0 || dirGrad.GetPixel(i - 1, j + 1).R == 255 && mod >= Utils.getGrayShade(modGrad.GetPixel(i - 1, j + 1))) && (i == width - 1 || j == 0 || dirGrad.GetPixel(i + 1, j - 1).R == 0 || dirGrad.GetPixel(i + 1, j - 1).R == 255 && mod >= Utils.getGrayShade(modGrad.GetPixel(i + 1, j - 1)))
 					)
 					{
 						raw[i, j] = mod;
@@ -361,6 +392,8 @@ namespace app_1
 					{
 						output.SetPixel(i, j, Color.FromArgb(255, 0, 0, 0));
 					}
+
+					if (progress) prog.inc();
 				}
 			}
 			
@@ -374,37 +407,63 @@ namespace app_1
 				}
 			}
 
+			if (progress) prog.finish();
 			return output;
 		}
 
-		public static Bitmap canny(Bitmap img, float sigma, int thr_high, int thr_low, Extra extra = Extra.rep)
+		public static Bitmap canny(Bitmap img, float sigma, int thr_high, int thr_low, 
+			Extra extra = Extra.rep, bool progress = false)
 		{
-			Bitmap input = nonmax(img, sigma, extra);
+			//Bitmap blured = gauss(img, extra, sigma, progress: progress);
+			Bitmap nomaxed = nonmax(img, sigma, extra, progress: progress);
 
-			int width = input.Width;
-			int height = input.Height;
+			int width = nomaxed.Width;
+			int height = nomaxed.Height;
+			int size = width * height;
+			Progress prog = new Progress("Canny", size);
 
-			Bitmap output = new Bitmap(width, height);
+			Bitmap tresholded1 = new Bitmap(width, height);
 
 			for (int i = 0; i < width; i++)
 			{
 				for (int j = 0; j < height; j++)
 				{
-					Color color = input.GetPixel(i, j);
+					Color color = nomaxed.GetPixel(i, j);
 					int val = color.R;
 
-					if (val * 1000 >= thr_low * 255 && val * 1000 < thr_high * 255) {
-						val = 255;
-					} else
+					if (val / 255 < thr_low / 1000)
 					{
 						val = 0;
 					}
 					color = Color.FromArgb(255, val, val, val);
-					output.SetPixel(i, j, color);
+					tresholded1.SetPixel(i, j, color);
+
+					if (progress) prog.inc();
+				}
+			}
+			/*
+			Bitmap tresholded2 = new Bitmap(width, height);
+
+			for (int i = 0; i < width; i++)
+			{
+				for (int j = 0; j < height; j++)
+				{
+					Color color = nomaxed.GetPixel(i, j);
+					int val = color.R;
+
+					if (val * 1000 < thr_low * 255)
+					{
+						val = 0;
+					}
+					color = Color.FromArgb(255, val, val, val);
+					tresholded1.SetPixel(i, j, color);
 				}
 			}
 
-			return output;
+			*/
+
+			if (progress) prog.finish();
+			return tresholded1;
 		}
 
 	}
