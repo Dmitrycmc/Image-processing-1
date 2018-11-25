@@ -25,7 +25,7 @@ namespace app_1
 					"canny (sigma) (thr_high) (thr_low)\n"
 				);
 
-				Arguments Args = new Arguments(new string[] { "canny", "2", "100", "30", "14.bmp", "17.jpg", "progress" });
+				Arguments Args = new Arguments(new string[] { "canny", "2", "100", "30", "beg3.bmp", "beg5.jpg"});
                 //Arguments Args = new Arguments(args);
                 Console.WriteLine(Args);
                 Args.execute();

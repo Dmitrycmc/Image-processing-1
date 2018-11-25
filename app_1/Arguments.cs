@@ -123,7 +123,7 @@ namespace app_1
         public Arguments(string[] args)
         {
 			progress = args[args.Length - 1] == "progress";
-            int len = args.Length - 1;
+            int len = args.Length - (progress ? 1 : 0);
 
             if (len < 3)
             {
