@@ -8,7 +8,7 @@ namespace app_1
         {
             try
 			{
-				//Console.WriteLine(Utils.angle(-5, 5));
+				//Console.WriteLine(Utils.angle(5, 0));
 				Console.WriteLine(
 					"mirror {x|y}\n" +
 					"rotate { cw | ccw} (angle)\n" +
@@ -25,7 +25,7 @@ namespace app_1
 					"canny (sigma) (thr_high) (thr_low)\n"
 				);
 
-				Arguments Args = new Arguments(new string[] { "nonmax", "2", "gradient20.bmp", "gradient20nonmax.bmp", "progress" });
+				Arguments Args = new Arguments(new string[] { "canny", "2", "100", "30", "14.bmp", "17.jpg", "progress" });
                 //Arguments Args = new Arguments(args);
                 Console.WriteLine(Args);
                 Args.execute();

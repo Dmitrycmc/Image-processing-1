@@ -119,7 +119,7 @@ namespace app_1
             int height = input.Height;
             Bitmap output = new Bitmap(width, height);
 			int size = width * height;
-			Progress prog = new Progress("Sobel", size);
+			Progress prog = progress ? new Progress("Sobel", size) : null;
 
 			Func<int, int, Color> currentGetPixel = input.getSafeGetPixel(extra);
 
@@ -189,7 +189,7 @@ namespace app_1
             Bitmap output = new Bitmap(width, height);
             double[,][] raw = new double[width, height][];
 			int size = width * height;
-			Progress prog = new Progress("Gradient", size);
+			Progress prog = progress ? new Progress("Gradient", size) : null;
 			
 			double max = 0;
 
@@ -331,7 +331,7 @@ namespace app_1
 			int width = img.Width;
 			int height = img.Height;
 			int size = width * height;
-			Progress prog = new Progress("Dir", size);
+			Progress prog = progress ? new Progress("Dir", size) : null;
 
 			double[,] kernel = Utils.getGaussKernel(sigma);
 			double[,] kernelX = Utils.derivFilter(kernel);
@@ -363,7 +363,7 @@ namespace app_1
 			int width = dirGrad.Width;
 			int height = dirGrad.Height;
 			int size = width * height;
-			Progress prog = new Progress("Nonmax", size);
+			Progress prog = progress ? new Progress("Nonmax", size) : null;
 
 			Bitmap output = new Bitmap(width, height);
 			int[,] raw = new int[width, height];
@@ -420,50 +420,76 @@ namespace app_1
 			int width = nomaxed.Width;
 			int height = nomaxed.Height;
 			int size = width * height;
-			Progress prog = new Progress("Canny", size);
+			Progress prog = progress ? new Progress("Canny", size) : null;
 
 			Bitmap tresholded1 = new Bitmap(width, height);
-
-			for (int i = 0; i < width; i++)
-			{
-				for (int j = 0; j < height; j++)
-				{
-					Color color = nomaxed.GetPixel(i, j);
-					int val = color.R;
-
-					if (val / 255 < thr_low / 1000)
-					{
-						val = 0;
-					}
-					color = Color.FromArgb(255, val, val, val);
-					tresholded1.SetPixel(i, j, color);
-
-					if (progress) prog.inc();
-				}
-			}
-			/*
 			Bitmap tresholded2 = new Bitmap(width, height);
 
+			List<Tuple<int, int>> q = new List<Tuple<int, int>>();
+
 			for (int i = 0; i < width; i++)
 			{
 				for (int j = 0; j < height; j++)
 				{
-					Color color = nomaxed.GetPixel(i, j);
+					tresholded2.SetPixel(i, j, Color.Black);
+					   Color color = nomaxed.GetPixel(i, j);
 					int val = color.R;
 
-					if (val * 1000 < thr_low * 255)
+					if ((double)val / 255 < (double)thr_low / 1000)
 					{
 						val = 0;
 					}
+
+					if ((double)val / 255 >= (double)thr_high / 1000)
+					{
+						q.Add(new Tuple<int, int>(i, j));
+					}
 					color = Color.FromArgb(255, val, val, val);
 					tresholded1.SetPixel(i, j, color);
+					prog.inc();
 				}
 			}
+			
 
-			*/
+			int index = 0;
 
+			while (index < q.Count)
+			{
+				int x = q[index].Item1;
+				int y = q[index].Item2;
+
+				tresholded2.SetPixel(x, y, Color.White);
+
+				int up = y == 0 ? 0 : tresholded1.GetPixel(x, y - 1).R;
+				int down = y == height - 1 ? 0 : tresholded1.GetPixel(x, y + 1).R;
+				int left = x == 0 ? 0 : tresholded1.GetPixel(x - 1, y).R;
+				int right = x == width - 1 ? 0 : tresholded1.GetPixel(x + 1, y).R;
+
+				if (up > 0 && (double)up / 255 < (double)thr_high / 1000)
+				{
+					tresholded1.SetPixel(x, y - 1, Color.White);
+					q.Add(new Tuple<int, int>(x, y - 1));
+				}
+				if (down > 0 && (double)down / 255 < (double)thr_high / 1000)
+				{
+					tresholded1.SetPixel(x, y + 1, Color.White);
+					q.Add(new Tuple<int, int>(x, y + 1));
+				}
+				if (left > 0 && (double)left / 255 < (double)thr_high / 1000)
+				{
+					tresholded1.SetPixel(x - 1, y, Color.White);
+					q.Add(new Tuple<int, int>(x - 1, y));
+				}
+				if (right > 0 && (double)right / 255 < (double)thr_high / 1000)
+				{
+					tresholded1.SetPixel(x + 1, y, Color.White);
+					q.Add(new Tuple<int, int>(x + 1, y));
+				}
+				index++;
+			}
+			
 			if (progress) prog.finish();
-			return tresholded1;
+			return tresholded2;
 		}
 
 	}
