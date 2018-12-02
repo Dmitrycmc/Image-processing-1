@@ -1,62 +1,13 @@
 ﻿using System;
 using System.Drawing;
 
-/*
-mirror {x|y} 
-Отражение по горизонтали или по вертикали, в зависомсти от указанного параметра
-
-rotate {cw|ccw} (angle)	
-Поворот по или против часовой стрелки на заданное количество градусов, 
-например: rotate cw 90
-
-sobel {rep|odd|even} {x|y}
-Фильтр Собеля, обнаруживающий горизонтальные или вертикальные контуры. 
-Первый параметр отвечает за способ экстраполяции изображений
-
-median (rad)
-Медианная фильтрация, параметр rad — целочисленный радиус фильтра, 
-то есть размер фильтра — квадрат со стороной (2 * rad + 1)
-
-gauss {rep|odd|even} (sigma)
-Фильтр Гаусса, параметр sigma — вещественный параметр фильтра
-
-gradient {rep|odd|even} (sigma) 
-Модуль градиента
-
-mse	 
-Вычисление метрики MSE, на вход подаётся два изображения, 
-результат выводится в консоль
-
-psnr
-Вычисление метрики PSNR
-
-ssim
-Вычисление метрики SSIM
-
-mssim
-Вычисление метрики MSSIM по блокам 8x8
-
-dir (sigma)
-Визуализация направлений градиента
-
-nonmax (sigma)
-Результат немаксимального подавления
-
-canny (sigma) (thr_high) (thr_low)
-Детектирование границ с помощью алгоритма Канни. 
-Первый параметр — сигма для вычисления частных производных, 
-следующие два параметра - больший и меньший пороги соответственно 
-в тысячных долях (целое число в диапазоне от 0 до 1000)
-	
-*/
-
-
 namespace app_1
 {
-    public enum Command {
+	public enum Command {
 		mirror, rotate, sobel, median, gauss, gradient,
 		mse, psnr, ssim, mssim, dir, nonmax, canny
 	};
+
     public enum Axis { x, y };
     public enum Direction { cw, ccw };
     public enum Angle { oneQuarter, twoQuarter, threeQuarter };
@@ -321,5 +272,24 @@ namespace app_1
             res += "img2: " + img2;
             return res;
         }
-    }
+
+		public static void help()
+		{
+			Console.Write(
+						"mirror {x|y}\n" +
+						"rotate { cw | ccw} (angle)\n" +
+						"sobel { rep | odd | even} { x | y}\n" +
+						"median(rad)\n" +
+						"gauss { rep | odd | even} (sigma)\n" +
+						"gradient { rep | odd | even} (sigma)\n" +
+						"mse\n" +
+						"psnr\n" +
+						"ssim\n" +
+						"mssim\n" +
+						"dir (sigma)\n" +
+						"nonmax (sigma)\n" +
+						"canny (sigma) (thr_high) (thr_low)\n"
+					);
+		}
+	}
 }

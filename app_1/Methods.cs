@@ -414,7 +414,6 @@ namespace app_1
 		public static Bitmap canny(Bitmap img, float sigma, int thr_high, int thr_low, 
 			Extra extra = Extra.rep, bool progress = false)
 		{
-			//Bitmap blured = gauss(img, extra, sigma, progress: progress);
 			Bitmap nomaxed = nonmax(img, sigma, extra, progress: progress);
 
 			int width = nomaxed.Width;
@@ -487,7 +486,26 @@ namespace app_1
 				}
 				index++;
 			}
-			
+		
+			for (int i = 1; i < width - 1; i++)
+			{
+				for (int j = 1; j < height - 1; j++)
+				{
+					Color color = tresholded2.GetPixel(i, j);
+					if (color.R == 255) continue;
+					bool up = tresholded2.GetPixel(i, j - 1).R == 255;
+					bool down = tresholded2.GetPixel(i, j + 1).R == 255;
+					bool left = tresholded2.GetPixel(i - 1, j).R == 255;
+					bool right = tresholded2.GetPixel(i + 1, j).R == 255;
+					bool leftUp = tresholded2.GetPixel(i - 1, j - 1).R == 255;
+					bool rightDown = tresholded2.GetPixel(i + 1, j + 1).R == 255;
+					bool leftDown = tresholded2.GetPixel(i - 1, j + 1).R == 255;
+					bool rightUp = tresholded2.GetPixel(i + 1, j - 1).R == 255;
+
+					if (up && down || left && right || leftDown && rightUp || leftUp && rightDown) tresholded2.SetPixel(i, j, Color.White); 
+				}
+			}
+
 			if (progress) prog.finish();
 			return tresholded2;
 		}
