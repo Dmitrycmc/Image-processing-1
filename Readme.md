@@ -1,7 +1,7 @@
 # Использование
 Приложение запускается из консоли со следующим форматом 
 
-`%appname% command [prop1 [prop2 [prop3]]] img1 img2 [progress] 
+`%appname% command [prop1 [prop2 [prop3]]] img1 img2 [progress]`
 
 ## Первая часть задания
 
