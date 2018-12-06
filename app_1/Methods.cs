@@ -358,10 +358,10 @@ namespace app_1
 
 					double dir = dirColor.R;
 					int mod = (modColor.R + modColor.G + modColor.B) / 3;
-					if (dir == 64 && (i == 0 || mod >= Utils.getGrayShade(modGrad.GetPixel(i - 1, j))) && (i == width - 1 || mod >= Utils.getGrayShade(modGrad.GetPixel(i + 1, j))) ||
-						dir == 128 && (j == 0 || mod >= Utils.getGrayShade(modGrad.GetPixel(i, j - 1))) && (j == height - 1 || mod >= Utils.getGrayShade(modGrad.GetPixel(i, j + 1))) ||
-						dir == 192 && (j == 0 || i == 0 || mod >= Utils.getGrayShade(modGrad.GetPixel(i - 1, j - 1))) && (i == width - 1 || j == height - 1 || mod >= Utils.getGrayShade(modGrad.GetPixel(i + 1, j + 1))) ||
-						dir == 255 && (j == height - 1 || i == 0 || mod >= Utils.getGrayShade(modGrad.GetPixel(i - 1, j + 1))) && (i == width - 1 || j == 0 || mod >= Utils.getGrayShade(modGrad.GetPixel(i + 1, j - 1)))
+					if (dir == 64 && (i == 0 || mod >= Utils.getGrayShade(modGrad.GetPixel(i - 1, j))) && (i == width - 1 || mod > Utils.getGrayShade(modGrad.GetPixel(i + 1, j))) ||
+						dir == 128 && (j == 0 || mod >= Utils.getGrayShade(modGrad.GetPixel(i, j - 1))) && (j == height - 1 || mod > Utils.getGrayShade(modGrad.GetPixel(i, j + 1))) ||
+						dir == 192 && (j == 0 || i == 0 || mod >= Utils.getGrayShade(modGrad.GetPixel(i - 1, j - 1))) && (i == width - 1 || j == height - 1 || mod > Utils.getGrayShade(modGrad.GetPixel(i + 1, j + 1))) ||
+						dir == 255 && (j == height - 1 || i == 0 || mod >= Utils.getGrayShade(modGrad.GetPixel(i - 1, j + 1))) && (i == width - 1 || j == 0 || mod > Utils.getGrayShade(modGrad.GetPixel(i + 1, j - 1)))
 					)
 					{
 						raw[i, j] = mod;
