@@ -296,10 +296,10 @@ namespace app_1
 			double var1 = Utils.var(img1, avg1, n, m);
 			double var2 = Utils.var(img2, avg2, n, m);
 
-			double c1 = (L * k1) * (L * k1);
-			double c2 = (L * k2) * (L * k2);
+			double c1 = L * k1 * (L * k1);
+			double c2 = L * k2 * (L * k2);
 
-			return ((2 * avg1 * avg2 + c1) * (2 * cov + c2)) / 
+			return (2 * avg1 * avg2 + c1) * (2 * cov + c2) / 
 				((avg1 * avg1 + avg2 * avg2 + c1) * (var1 + var2 + c2));
 		}
 

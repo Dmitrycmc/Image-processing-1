@@ -191,7 +191,7 @@ namespace app_1
                     b += color.B * kernel_el;
                 }
             }
-            return Color.FromArgb(255, Utils.restrict(r), Utils.restrict(g), Utils.restrict(b));
+            return Color.FromArgb(255, restrict(r), restrict(g), restrict(b));
         }
 
         static public Color gaussConvolution(int x, int y, double[,] kernel, Func<int, int, Color> currentGetPixel)
@@ -219,7 +219,7 @@ namespace app_1
 
 		public static int angle(double x, double y)
 		{
-			if (Math.Abs(x) < Utils.eps && Math.Abs(y) < Utils.eps) return 0;
+			if (Math.Abs(x) < eps && Math.Abs(y) < eps) return 0;
 			double angle = Math.Atan2(y, x);
 			angle /= Math.PI / 4;
 			angle = Math.Round(angle);
