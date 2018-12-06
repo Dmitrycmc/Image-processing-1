@@ -215,42 +215,7 @@ namespace app_1
             return Color.FromArgb(255, (int)Math.Round(r), (int)Math.Round(g), (int)Math.Round(b));
         }
 
-		public static double[] gradientConvolution(int x, int y,
-			Func<int, int, Color> currentGetPixel, double[,] kernelX)
-		{
-			int rad = kernelX.GetLength(0);
-			double rx = 0;
-			double gx = 0;
-			double bx = 0;
-			double ry = 0;
-			double gy = 0;
-			double by = 0;
-
-			for (int i = 1 - rad; i <= rad - 1; i++)
-			{
-				for (int j = 1 - rad; j <= rad - 1; j++)
-				{
-					Color color = currentGetPixel(x + i, y + j);
-
-					double elX = kernelX[Math.Abs(i), Math.Abs(j)] * Math.Sign(j);
-					double elY = kernelX[Math.Abs(j), Math.Abs(i)] * Math.Sign(i);
-					
-					rx += color.R * elX;
-					gx += color.G * elX;
-					bx += color.B * elX;
-
-					ry += color.R * elY;
-					gy += color.G * elY;
-					by += color.B * elY;
-				}
-			}
-
-			return new double[] {
-				Math.Sqrt(rx * rx + ry * ry),
-				Math.Sqrt(gx * gx + gy * gy),
-				Math.Sqrt(bx * bx + by * by)
-			};
-		}
+		
 
 		public static int angle(double x, double y)
 		{
@@ -279,12 +244,18 @@ namespace app_1
 		{
 			return (color.R + color.G + color.B) / 3;
 		}
+		
 
-		public static int gradientDir(int x, int y, Func<int, int, Color> currentGetPixel, double[,] kernelX)
+		public static double[] gradientConvolution(int x, int y,
+			Func<int, int, Color> currentGetPixel, double[,] kernelX)
 		{
 			int rad = kernelX.GetLength(0);
-			double gradX = 0;
-			double gradY = 0;
+			double rx = 0;
+			double gx = 0;
+			double bx = 0;
+			double ry = 0;
+			double gy = 0;
+			double by = 0;
 
 			for (int i = 1 - rad; i <= rad - 1; i++)
 			{
@@ -295,14 +266,25 @@ namespace app_1
 					double elX = kernelX[Math.Abs(i), Math.Abs(j)] * Math.Sign(j);
 					double elY = kernelX[Math.Abs(j), Math.Abs(i)] * Math.Sign(i);
 
-					double intensive = (color.R + color.G + color.B) / 3;
+					rx += color.R * elX;
+					gx += color.G * elX;
+					bx += color.B * elX;
 
-					gradX += intensive * elX;
-					gradY += intensive * elY;
+					ry += color.R * elY;
+					gy += color.G * elY;
+					by += color.B * elY;
+					
+					
 				}
 			}
-			//Console.WriteLine(gradX + " " + gradY);
-			return angle(gradX, gradY);
+			
+			return new double[] {
+				Math.Sqrt(rx * rx + ry * ry),
+				Math.Sqrt(gx * gx + gy * gy),
+				Math.Sqrt(bx * bx + by * by),
+
+				angle((rx + gx + bx) / 3, (ry + gy + by) / 3)
+			};
 		}
 
 		public static double avg(Bitmap img, int n = -1, int m = -1)

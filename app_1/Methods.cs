@@ -177,54 +177,63 @@ namespace app_1
 			return output;
         }
         
-        public static Bitmap gradient(Bitmap input, Extra extra, float sigma, bool progress = false)
-        {
-            double[,] kernelX = Utils.derivFilter(sigma);
-		
-			Func<int, int, Color> currentGetPixel = input.getSafeGetPixel(extra);
-
-            int width = input.Width;
-            int height = input.Height;
-            Bitmap output = new Bitmap(width, height);
-            double[,][] raw = new double[width, height][];
+        public static Bitmap[] gradient(Bitmap input, float sigma, Extra extra = Extra.rep,  bool progress = false)
+		{
+			int width = input.Width;
+			int height = input.Height;
 			int size = width * height;
 			Progress prog = progress ? new Progress("Gradient", size) : null;
-			
-			double max = 0;
 
-            for (int i = 0; i < width; i++)
-            {
-                for (int j = 0; j < height; j++)
-                {
-                    double[] val = Utils.gradientConvolution(i, j,  currentGetPixel, kernelX);
+			double[,] kernelX = Utils.derivFilter(sigma);
+
+			Func<int, int, Color> currentGetPixel = input.getSafeGetPixel(extra);
+
+			Bitmap dir = new Bitmap(width, height);
+			Bitmap mod = new Bitmap(width, height);
+			double[,][] raw = new double[width, height][];
+
+			double maxMod = 0;
+
+			for (int i = 0; i < width; i++)
+			{
+				for (int j = 0; j < height; j++)
+				{
+					double[] val = Utils.gradientConvolution(i, j, currentGetPixel, kernelX);
+
+					int direction = (int)val[3];
+
+					Color color = Color.FromArgb(255, direction, direction, direction);
+					dir.SetPixel(i, j, color);
+					
 					raw[i, j] = val;
-                    if (val[0] > max) max = val[0];
-                    if (val[1] > max) max = val[1];
-                    if (val[2] > max) max = val[2];
+					if (val[0] > maxMod) maxMod = val[0];
+					if (val[1] > maxMod) maxMod = val[1];
+					if (val[2] > maxMod) maxMod = val[2];
 
 					if (progress) prog.inc();
-                }
-            }
-
-			if (max < Utils.eps) max = 255;
-
+				}
+			}
+			
+			if (maxMod < Utils.eps) maxMod = 255;
+			
 			for (int i = 0; i < width; i++)
 			{
 				for (int j = 0; j < height; j++)
 				{
 					double[] val = raw[i, j];
 
-					int r = Utils.scale(val[0], max);
-					int g = Utils.scale(val[1], max);
-					int b = Utils.scale(val[2], max);
+					int r = Utils.scale(val[0], maxMod);
+					int g = Utils.scale(val[1], maxMod);
+					int b = Utils.scale(val[2], maxMod);
 
-					output.SetPixel(i, j, Color.FromArgb(255, r, g, b));
+					mod.SetPixel(i, j, Color.FromArgb(255, r, g, b));
 				}
-				
+
 			}
+
 			if (progress) prog.finish();
-			return output;
-        }
+			return new Bitmap[] { mod, dir };
+		}
 
 		public static double mse(Bitmap img1, Bitmap img2)
 		{
@@ -325,39 +334,11 @@ namespace app_1
 			return sum / (W * H);
 		}
 
-		public static Bitmap dir(Bitmap img, float sigma, Extra extra = Extra.rep, bool progress = false)
-		{
-			int width = img.Width;
-			int height = img.Height;
-			int size = width * height;
-			Progress prog = progress ? new Progress("Dir", size) : null;
-			
-			double[,] kernelX = Utils.derivFilter(sigma);
-
-			Func<int, int, Color> currentGetPixel = img.getSafeGetPixel(extra);
-
-			Bitmap output = new Bitmap(width, height);
-
-			for (int i = 0; i < width; i++)
-			{
-				for (int j = 0; j < height; j++)
-				{
-					int val = Utils.gradientDir(i, j, currentGetPixel, kernelX);
-					Color color = Color.FromArgb(255, val, val, val);
-					output.SetPixel(i, j, color);
-
-					if (progress) prog.inc();
-				}
-			}
-
-			if (progress) prog.finish();
-			return output;
-		}
-
 		public static Bitmap nonmax(Bitmap img, float sigma, Extra extra = Extra.rep, bool progress = false)
 		{
-			Bitmap dirGrad = dir(img, sigma, extra, progress: progress);
-			Bitmap modGrad = gradient(img, extra, sigma, progress: progress);
+			Bitmap[] grad = gradient(img, sigma, extra, progress: progress);
+			Bitmap modGrad = grad[0];
+			Bitmap dirGrad = grad[1];
 			int width = dirGrad.Width;
 			int height = dirGrad.Height;
 			int size = width * height;

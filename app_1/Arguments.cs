@@ -236,7 +236,7 @@ namespace app_1
 					res = Methods.gauss(img1, this.extra, this.sigma, progress: progress);
                     break;
 				case Command.gradient:
-					res = Methods.gradient(img1, this.extra, this.sigma, progress: progress);
+					res = Methods.gradient(img1, this.sigma, this.extra, progress: progress)[0];
 					break;
 				case Command.mse:
 					Console.WriteLine(Methods.mse(img1, img2));
@@ -251,7 +251,7 @@ namespace app_1
 					Console.WriteLine(Methods.mssim(img1, img2));
 					return;
 				case Command.dir:
-					res = Methods.dir(img1, this.sigma, progress: progress);
+					res = Methods.gradient(img1, this.sigma, progress: progress)[1];
 					break;
 				case Command.nonmax:
 					res = Methods.nonmax(img1, this.sigma, progress: progress);
