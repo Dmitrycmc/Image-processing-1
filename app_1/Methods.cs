@@ -179,8 +179,7 @@ namespace app_1
         
         public static Bitmap gradient(Bitmap input, Extra extra, float sigma, bool progress = false)
         {
-            double[,] kernel = Utils.getGaussKernel(sigma);
-            double[,] kernelX = Utils.derivFilter(kernel);
+            double[,] kernelX = Utils.derivFilter(sigma);
 		
 			Func<int, int, Color> currentGetPixel = input.getSafeGetPixel(extra);
 
@@ -332,9 +331,8 @@ namespace app_1
 			int height = img.Height;
 			int size = width * height;
 			Progress prog = progress ? new Progress("Dir", size) : null;
-
-			double[,] kernel = Utils.getGaussKernel(sigma);
-			double[,] kernelX = Utils.derivFilter(kernel);
+			
+			double[,] kernelX = Utils.derivFilter(sigma);
 
 			Func<int, int, Color> currentGetPixel = img.getSafeGetPixel(extra);
 
@@ -344,7 +342,7 @@ namespace app_1
 			{
 				for (int j = 0; j < height; j++)
 				{
-					int val = Utils.gradientDir(i, j, kernel, currentGetPixel, kernelX);
+					int val = Utils.gradientDir(i, j, currentGetPixel, kernelX);
 					Color color = Color.FromArgb(255, val, val, val);
 					output.SetPixel(i, j, color);
 
@@ -395,12 +393,13 @@ namespace app_1
 					if (progress) prog.inc();
 				}
 			}
-			
+
 			for (int i = 0; i < width; i++)
 			{
 				for (int j = 0; j < height; j++)
 				{
 					int val = Utils.scale(raw[i, j], max);
+
 					Color color = Color.FromArgb(255, val, val, val);
 					output.SetPixel(i, j, color);
 				}

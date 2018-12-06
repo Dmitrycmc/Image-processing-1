@@ -14,7 +14,7 @@ namespace app_1
 					return;
 				}
 				Arguments Args = new Arguments(args);
-                Console.WriteLine(Args);
+				Console.WriteLine(Args);
                 Args.execute();
                 Console.WriteLine("Success!");
             }

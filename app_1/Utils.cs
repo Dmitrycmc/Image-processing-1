@@ -102,9 +102,10 @@ namespace app_1
             }
         }
         
-        public static double gaussian(double x, float sigma)
+        public static double gaussian(float sigma, double x, double y = 0)
         {
-            return Math.Exp(-Math.Pow(x, 2) / (2 * sigma * sigma)) / (sigma * Math.Sqrt(2 * Math.PI));
+			double r2 = x * x + y * y;
+            return Math.Exp(-r2 / (2 * sigma * sigma));
         }
         
         public static double[,] getGaussKernel(float sigma)
@@ -121,7 +122,7 @@ namespace app_1
                         kernel[i, j] = kernel[j, i] = 0;
                         continue;
                     }
-                    double val = gaussian(Math.Sqrt(i * i + j * j), sigma);
+                    double val = gaussian(sigma, i, j);
                     kernel[i, j] = kernel[j, i] = val;
                 }
             }
@@ -145,35 +146,32 @@ namespace app_1
             }
 			return kernel;
         }
+		
 
-        public static double[,] derivFilter(double[,] kernel)
-        {
-            int rad = kernel.GetLength(0);
-            double[,] res = new double[rad, rad];
-			
+		public static double[,] derivFilter(float sigma)
+		{
+			int rad = (int)Math.Ceiling(2 * sigma);
+			double[,] kernel = new double[rad, rad];
+
 			for (int i = 0; i < rad; i++)
 			{
 				for (int j = 0; j < rad; j++)
 				{
-					double prev;
-					double next;
-					int m = 2;
-
-					prev = kernel[Math.Abs(i), Math.Abs(j - 1)];
-					if (j + 1 == rad || (next = kernel[Math.Abs(i), Math.Abs(j + 1)]) == 0)
+					if (Math.Sqrt(i * i + j * j) > 2 * sigma)
 					{
-						next = kernel[Math.Abs(i), Math.Abs(j)];
-						m = 1;
+						kernel[i, j] = kernel[j, i] = 0;
+						continue;
 					}
-					res[i, j] = (next - prev) / m;
+					double val = gaussian(sigma, i, j) / (2 * Math.PI * Math.Pow(sigma, 2)) * (-j * (i*i+j*j)/(2 * Math.Pow(sigma, 4)));
+					kernel[i, j] = val;
 				}
 			}
-            return res;
-        }
-        
-        public static int scale(double val, double from, int to = 255)
+			return kernel;
+		}
+
+		public static int scale(double val, double from, int to = 255)
         {
-            return (int)Math.Round(val / from * to);
+			return (int)Math.Round(val / from * to);
         }
 
         public static Color sobelConvolution(int x, int y, int[,] kernel, Func<int, int, Color> currentGetPixel)
@@ -282,10 +280,9 @@ namespace app_1
 			return (color.R + color.G + color.B) / 3;
 		}
 
-		public static int gradientDir(int x, int y,
-			double[,] kernel, Func<int, int, Color> currentGetPixel, double[,] kernelX)
+		public static int gradientDir(int x, int y, Func<int, int, Color> currentGetPixel, double[,] kernelX)
 		{
-			int rad = kernel.GetLength(0);
+			int rad = kernelX.GetLength(0);
 			double gradX = 0;
 			double gradY = 0;
 
