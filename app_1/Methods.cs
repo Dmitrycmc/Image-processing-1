@@ -379,11 +379,10 @@ namespace app_1
 
 					double dir = dirColor.R;
 					int mod = (modColor.R + modColor.G + modColor.B) / 3;
-
-					if (dir == 64 && (i == 0 || dirGrad.GetPixel(i - 1, j).R == 0 || dirGrad.GetPixel(i - 1, j).R == 64 && mod >= Utils.getGrayShade(modGrad.GetPixel(i - 1, j))) && (i == width - 1 || dirGrad.GetPixel(i + 1, j).R == 0 || dirGrad.GetPixel(i + 1, j).R == 64 && mod >= Utils.getGrayShade(modGrad.GetPixel(i + 1, j))) ||
-						dir == 128 && (j == 0 || dirGrad.GetPixel(i, j - 1).R == 0 || dirGrad.GetPixel(i, j - 1).R == 128 && mod >= Utils.getGrayShade(modGrad.GetPixel(i, j - 1))) && (j == height - 1 || dirGrad.GetPixel(i, j + 1).R == 0 || dirGrad.GetPixel(i, j + 1).R == 128 && mod >= Utils.getGrayShade(modGrad.GetPixel(i, j + 1))) ||
-						dir == 192 && (j == 0 || i == 0 || dirGrad.GetPixel(i - 1, j - 1).R == 0 || dirGrad.GetPixel(i - 1, j - 1).R == 192 && mod >= Utils.getGrayShade(modGrad.GetPixel(i - 1, j - 1))) && (i == width - 1 || j == height - 1 || dirGrad.GetPixel(i + 1, j + 1).R == 0 || dirGrad.GetPixel(i + 1, j + 1).R == 192 && mod >= Utils.getGrayShade(modGrad.GetPixel(i + 1, j + 1))) ||
-						dir == 255 && (j == height - 1 || i == 0 || dirGrad.GetPixel(i - 1, j + 1).R == 0 || dirGrad.GetPixel(i - 1, j + 1).R == 255 && mod >= Utils.getGrayShade(modGrad.GetPixel(i - 1, j + 1))) && (i == width - 1 || j == 0 || dirGrad.GetPixel(i + 1, j - 1).R == 0 || dirGrad.GetPixel(i + 1, j - 1).R == 255 && mod >= Utils.getGrayShade(modGrad.GetPixel(i + 1, j - 1)))
+					if (dir == 64 && (i == 0 || mod >= Utils.getGrayShade(modGrad.GetPixel(i - 1, j))) && (i == width - 1 || mod >= Utils.getGrayShade(modGrad.GetPixel(i + 1, j))) ||
+						dir == 128 && (j == 0 || mod >= Utils.getGrayShade(modGrad.GetPixel(i, j - 1))) && (j == height - 1 || mod >= Utils.getGrayShade(modGrad.GetPixel(i, j + 1))) ||
+						dir == 192 && (j == 0 || i == 0 || mod >= Utils.getGrayShade(modGrad.GetPixel(i - 1, j - 1))) && (i == width - 1 || j == height - 1 || mod >= Utils.getGrayShade(modGrad.GetPixel(i + 1, j + 1))) ||
+						dir == 255 && (j == height - 1 || i == 0 || mod >= Utils.getGrayShade(modGrad.GetPixel(i - 1, j + 1))) && (i == width - 1 || j == 0 || mod >= Utils.getGrayShade(modGrad.GetPixel(i + 1, j - 1)))
 					)
 					{
 						raw[i, j] = mod;
@@ -486,26 +485,6 @@ namespace app_1
 				}
 				index++;
 			}
-		
-			for (int i = 1; i < width - 1; i++)
-			{
-				for (int j = 1; j < height - 1; j++)
-				{
-					Color color = tresholded2.GetPixel(i, j);
-					if (color.R == 255) continue;
-					bool up = tresholded2.GetPixel(i, j - 1).R == 255;
-					bool down = tresholded2.GetPixel(i, j + 1).R == 255;
-					bool left = tresholded2.GetPixel(i - 1, j).R == 255;
-					bool right = tresholded2.GetPixel(i + 1, j).R == 255;
-					bool leftUp = tresholded2.GetPixel(i - 1, j - 1).R == 255;
-					bool rightDown = tresholded2.GetPixel(i + 1, j + 1).R == 255;
-					bool leftDown = tresholded2.GetPixel(i - 1, j + 1).R == 255;
-					bool rightUp = tresholded2.GetPixel(i + 1, j - 1).R == 255;
-
-					if (up && down || left && right || leftDown && rightUp || leftUp && rightDown) tresholded2.SetPixel(i, j, Color.White); 
-				}
-			}
-
 			if (progress) prog.finish();
 			return tresholded2;
 		}
