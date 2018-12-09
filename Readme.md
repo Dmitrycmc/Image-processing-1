@@ -52,3 +52,5 @@
 
 * diff  	
 Модуль разности кадров
+
+* without any params prints help

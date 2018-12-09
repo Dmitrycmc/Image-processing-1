@@ -89,7 +89,7 @@ namespace app_1
             int height = input.Height;
             Bitmap output = new Bitmap(width, height);
 			int size = width * height;
-			Progress prog = new Progress("Median", size);
+			Progress prog = progress ? new Progress("Median", size) : null;
 
 			for (int i = 0; i < width; i++)
             {
@@ -424,7 +424,7 @@ namespace app_1
 					}
 					color = Color.FromArgb(255, val, val, val);
 					tresholded1.SetPixel(i, j, color);
-					prog.inc();
+					if (progress) prog.inc();
 				}
 			}
 
@@ -498,7 +498,7 @@ namespace app_1
 
 					output.SetPixel(i, j, Color.FromArgb(255, r, g, b));
 
-					prog.inc();
+					if (progress) prog.inc();
 				}
 			}
 			if (progress) prog.finish();

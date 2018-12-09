@@ -184,7 +184,7 @@ namespace app_1
                 for (int j = -1; j <= 1; j++)
                 {
                     Color color = currentGetPixel(x + i, y + j);
-                    int kernel_el = kernel[i + 1, j + 1];
+                    int kernel_el = kernel[j + 1, i + 1];
 
                     r += color.R * kernel_el;
                     g += color.G * kernel_el;
