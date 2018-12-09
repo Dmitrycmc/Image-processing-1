@@ -390,7 +390,7 @@ namespace app_1
 			return output;
 		}
 
-		public static Bitmap canny(Bitmap img, float sigma, int thr_high, int thr_low, 
+		public static Bitmap canny(Bitmap img, float sigma, int thr_high, int thr_low,
 			Extra extra = Extra.rep, bool progress = false)
 		{
 			Bitmap nomaxed = nonmax(img, sigma, extra, progress: progress);
@@ -410,7 +410,7 @@ namespace app_1
 				for (int j = 0; j < height; j++)
 				{
 					tresholded2.SetPixel(i, j, Color.Black);
-					   Color color = nomaxed.GetPixel(i, j);
+					Color color = nomaxed.GetPixel(i, j);
 					int val = color.R;
 
 					if ((double)val / 255 < (double)thr_low / 1000)
@@ -427,7 +427,7 @@ namespace app_1
 					prog.inc();
 				}
 			}
-			
+
 
 			int index = 0;
 
@@ -468,6 +468,43 @@ namespace app_1
 			if (progress) prog.finish();
 			return tresholded2;
 		}
+
+		public static Bitmap diff(Bitmap img1, Bitmap img2, bool progress = false)
+		{
+			int width = img1.Width;
+			int height = img1.Height;
+			int size = width * height;
+			
+			if (width != img2.Width || height != img2.Height)
+			{
+				throw new Exception("Sizes don\'t match");
+			}
+
+			Bitmap output = new Bitmap(width, height);
+
+			Progress prog = progress ? new Progress("Diff", size) : null;
+
+			for (int i = 0; i < width; i++)
+			{
+				for (int j = 0; j < height; j++)
+				{
+					Color c1 = img1.GetPixel(i, j);
+					Color c2 = img2.GetPixel(i, j);
+
+					int r, g, b;
+					r = Utils.restrict(Math.Abs(c1.R - c2.R));
+					g = Utils.restrict(Math.Abs(c1.G - c2.G));
+					b = Utils.restrict(Math.Abs(c1.B - c2.B));
+
+					output.SetPixel(i, j, Color.FromArgb(255, r, g, b));
+
+					prog.inc();
+				}
+			}
+			if (progress) prog.finish();
+			return output;
+		}
+
 
 	}
 }

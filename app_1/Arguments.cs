@@ -5,7 +5,7 @@ namespace app_1
 {
 	public enum Command {
 		mirror, rotate, sobel, median, gauss, gradient,
-		mse, psnr, ssim, mssim, dir, nonmax, canny
+		mse, psnr, ssim, mssim, dir, nonmax, canny, diff
 	};
 
     public enum Axis { x, y };
@@ -207,6 +207,14 @@ namespace app_1
 					thr_low = int.Parse(props[2]);
 					break;
 
+				case "diff":
+					command = Command.diff;
+					if (props.Length != 0)
+					{
+						throw new Exception("Invalid number of props!");
+					}
+					break;
+
 				default: throw new Exception("Invalid command \"" + args[0] + "\""); 
             }
 
@@ -215,7 +223,7 @@ namespace app_1
         public void execute()
         {
             Bitmap img1 = new Bitmap(this.img1);
-			Bitmap img2 = Array.FindIndex(new Command[] { Command.mse, Command.psnr, Command.ssim, Command.mssim }, x => x == this.command) != -1  ? new Bitmap(this.img2) : null;
+			Bitmap img2 = Array.FindIndex(new Command[] { Command.mse, Command.psnr, Command.ssim, Command.mssim, Command.diff }, x => x == this.command) != -1  ? new Bitmap(this.img2) : null;
 			Bitmap res = null;
 
 			switch (this.command)
@@ -259,6 +267,10 @@ namespace app_1
 				case Command.canny:
 					res = Methods.canny(img1, this.sigma, this.thr_high, this.thr_low, progress: progress);
 					break;
+				case Command.diff:
+					res = Methods.diff(img1, img2, progress: progress);
+					res.Save(this.img1 + " ^ " + this.img2);
+					return;
 			}
 			res.Save(this.img2);
         }
@@ -288,7 +300,8 @@ namespace app_1
 						"mssim\n" +
 						"dir (sigma)\n" +
 						"nonmax (sigma)\n" +
-						"canny (sigma) (thr_high) (thr_low)\n"
+						"canny (sigma) (thr_high) (thr_low)\n" + 
+						"diff\n"
 					);
 		}
 	}
